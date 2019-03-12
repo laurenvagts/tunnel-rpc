@@ -11,7 +11,7 @@ before_install:
   - pip install -U pip
 
 install:
-  - pip install -r requirements.txt coverage codecov
+  - pip install -e '.[test]' -r requirements.txt coverage codecov
 
 script:
   - coverage erase

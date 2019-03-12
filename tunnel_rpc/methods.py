@@ -1,24 +1,21 @@
 import os
-from typing import List
 from docker import APIClient
 from docker.errors import APIError
 from jsonrpcserver import method
 
 
-def eval_commands(client: APIClient,
-                  cont: str,
-                  commands: List[str]) -> str:
+def eval_commands(client, cont, commands):
     """Evaluates commands in a docker container.
 
     Keeps stdin open and runs commands on same environment.
 
     Args:
-        client : API interaction client for a Docker host
-        cont : Container's ID used to run the commands
-        commands : Commands to run
+        client (APIClient): API interaction client for a Docker host
+        cont (str): Container's ID used to run the commands
+        commands (List[str]): Commands to run
 
     Returns:
-        The stdout/stderr combined output
+        (str) The stdout/stderr combined output
 
     """
     try:
@@ -66,12 +63,9 @@ def run(request=None):
         image='bash:latest',
         stdin_open=True,
         tty=True,
-        command=['bash', '-c', """
-while read CMD ; do
- echo "\\$ $CMD" ;
- eval $CMD ;
- echo $? ;
-done"""]
+        command=['bash', '-c', 'while read CMD ; '
+                               'do echo "\\$ $CMD" ; '
+                               'eval $CMD ; echo $? ; done']
     )
 
     api.start(bash)
