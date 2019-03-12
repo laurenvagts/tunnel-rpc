@@ -1,0 +1,22 @@
+dist: xenial
+language: python
+python:
+  - 3.7
+  - 3.6
+  - 3.5
+  - 3.4
+  - 2.7
+
+before_install:
+  - pip install -U pip
+
+install:
+  - pip install -r requirements.txt coverage codecov
+
+script:
+  - coverage erase
+  - coverage run --branch --source=tunnel_rpc -m pytest
+  - coverage xml -i
+
+after_success:
+  - codecov
