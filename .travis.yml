@@ -16,3 +16,7 @@ install:
 script:
   - coverage erase
   - coverage run --branch --source=tunnel_rpc -m pytest
+  - coverage xml -i
+
+after_success:
+  - codecov
