@@ -4,6 +4,13 @@ from jsonrpcserver import dispatch
 
 
 def create_app():
+    """Create Flask endpoint
+
+    Accepts and executes command requests from JSON data.
+
+    :return:
+        (application/json) Application for execution.
+    """
     app = Flask(__name__)
 
     @app.route("/", methods=["POST"])
