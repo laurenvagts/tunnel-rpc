@@ -9,7 +9,7 @@ def create_app():
     Accepts and executes command requests from JSON data.
 
     :return:
-        (application/json) Application for execution.
+        (Response) Application for execution.
     """
     app = Flask(__name__)
 
