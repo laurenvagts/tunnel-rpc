@@ -16,7 +16,7 @@ def create_app():
 
     Accepts and executes command requests from JSON data.
 
-    Returns
+    Returns:
         (Response) Application for execution.
 
     """

@@ -70,7 +70,14 @@ def eval_commands(client, cont, commands):
 
 
 def parse_output(output):
-    """TODO (wyatt): Fill in Doc Strings.
+    """Store all terminal lines associated with the program run commands.
+
+    Args:
+        output(str): Container with pre-run commands in terminal
+
+    Returns:
+        (list) The contents of the terminal
+
     """
     preamble = True
     commands = []
