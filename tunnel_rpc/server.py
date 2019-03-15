@@ -5,12 +5,13 @@ from jsonrpcserver import dispatch
 
 
 def create_app():
-    """Create Flask endpoint
+    """Create Flask endpoint.
 
     Accepts and executes command requests from JSON data.
 
-    :return:
+    Returns:
         (Response) Application for execution.
+
     """
     app = Flask(__name__)
 
