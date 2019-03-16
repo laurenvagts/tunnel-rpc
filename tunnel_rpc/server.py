@@ -1,17 +1,36 @@
+# -*- coding: utf-8 -*-
+"""Main server factory for flask cli.
+
+"""
 from __future__ import print_function
 import sys
 from flask import Flask, request, Response
-from jsonrpcserver import dispatch
+from jsonrpcserver import dispatch, method
+from tunnel_rpc.methods import run
+
+__all__ = ["create_app"]
 
 
 def create_app():
+    """Create Flask endpoint.
+
+    Accepts and executes command requests from JSON data.
+
+    Returns:
+        (Response) Application for execution.
+
+    """
     app = Flask(__name__)
 
+    method(run)
+
     @app.route("/", methods=["POST"])
-    def index():
+    def index():  # pragma pylint: disable=unused-variable
         req = request.get_data().decode()
         response = dispatch(req, debug=True)
         print(req, response, file=sys.stderr)
-        return Response(str(response), response.http_status, mimetype="application/json")
+        return Response(
+            str(response), response.http_status, mimetype="application/json"
+        )
 
     return app
