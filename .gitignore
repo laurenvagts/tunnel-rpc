@@ -6,3 +6,4 @@ docs/build/
 .coverage*
 coverage.xml
 *.egg-info/
+.scannerwork/
