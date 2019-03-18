@@ -99,7 +99,14 @@ def parse_output(output):
 
 
 def run(request=None):
-    """TODO (lauren): Fill in Doc Strings.
+    """Runs commands in a docker container and parses the log output.
+
+    Args:
+        request (dict): requested commands to run
+
+    Returns:
+        (list) parsed outputs
+
     """
     api_client = APIClient()
     container = create_container(api_client)
