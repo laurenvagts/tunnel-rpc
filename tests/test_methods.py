@@ -2,7 +2,7 @@
 """Tests for Tunnel RPC methods.
 
 """
-from tunnel_rpc.methods import eval_commands
+from tunnel_rpc.methods import eval_commands, parse_output
 
 
 def test_eval_commands(docker_api_client, tunnel_container_factory):
@@ -27,3 +27,33 @@ def test_eval_commands(docker_api_client, tunnel_container_factory):
         docker_api_client, stderr_container, ["echo 43 1>&2"]
     )
     assert "43" in stderr_logs, "eval_commands should contain stderr"
+
+
+def test_parse_output():
+    """Test the parse output method.
+
+    parse_output should return a list of tuples
+    parse_output should ignore preambles
+    parse_output should append every command log
+
+    """
+
+    response = parse_output("$ \r\n0\r\n")
+    assert isinstance(response, list), "parse_output should return a list"
+    assert isinstance(
+        response[0], tuple
+    ), "parse_output should return a list of tuples"
+
+    response = parse_output("should not show up \r\n$ \r\n0\r\n")
+    assert all(
+        not isinstance(item, str) or "should not show up" not in item
+        for t_item in response
+        for item in t_item
+    ), "parse_output should ignore preambles"
+
+    for length in range(2, 10):
+        output = "$ \r\n0\r\n" * length
+        response = parse_output(output)
+        assert (
+            len(response) == length
+        ), "parse_output should append every command log"

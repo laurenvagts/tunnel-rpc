@@ -83,8 +83,6 @@ def parse_output(output):
     commands = []
     buffer = []
     for line in output.rstrip("\r\n").split("\r\n"):
-        if line == "":
-            continue
         if line.startswith("$ "):
             if preamble:
                 preamble = False
