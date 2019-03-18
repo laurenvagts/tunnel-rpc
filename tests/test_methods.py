@@ -34,6 +34,7 @@ def test_parse_output():
 
     parse_output should return a list of tuples
     parse_output should ignore preambles
+    parse_output should append every command log
 
     """
 
@@ -49,3 +50,10 @@ def test_parse_output():
         for t_item in response
         for item in t_item
     ), "parse_output should ignore preambles"
+
+    for length in range(2, 10):
+        output = "$ \r\n0\r\n" * length
+        response = parse_output(output)
+        assert (
+            len(response) == length
+        ), "parse_output should append every command log"
