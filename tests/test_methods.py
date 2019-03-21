@@ -2,7 +2,7 @@
 """Tests for Tunnel RPC methods.
 
 """
-from tunnel_rpc.methods import eval_commands, parse_output
+from tunnel_rpc.methods import eval_commands, parse_output, run
 
 
 def test_eval_commands(docker_api_client, tunnel_container_factory):
@@ -57,3 +57,19 @@ def test_parse_output():
         assert (
             len(response) == length
         ), "parse_output should append every command log"
+
+
+def test_run():
+    """Test the run method.
+
+    run should not raise errors
+
+    """
+    try:
+        run({'commands': ['ls']})
+        run({'commands': ['ls'], 'foo': 'bar'})
+        run({'foo': 'bar'})
+        run({'commands': ['false']})
+        run({'commands': []})
+    except Exception as err:  # pylint: disable=broad-except
+        assert False, str(err)

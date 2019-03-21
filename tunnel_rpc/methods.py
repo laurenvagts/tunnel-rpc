@@ -88,11 +88,13 @@ def parse_output(output):
                 preamble = False
             else:
                 commands.append(
-                    (buffer[0], "\n".join(buffer[1:-1]), int(buffer[-1]))
+                    (buffer[0], "\n".join(buffer[1:-1]), buffer[-1])
                 )
             buffer.clear()
         buffer.append(line)
-    commands.append((buffer[0], "\n".join(buffer[1:-1]), int(buffer[-1])))
+    if buffer:
+        commands.append((buffer[0], "\n".join(buffer[1:-1]), buffer[-1]))
+        buffer.clear()
     return commands
 
 
@@ -108,7 +110,7 @@ def run(request=None):
     """
     api_client = APIClient()
     container = create_container(api_client)
-    lines = eval_commands(api_client, container, request["commands"])
+    lines = eval_commands(api_client, container, request.get("commands", []))
     results = parse_output(lines)
     api_client.remove_container(container)
     return results
