@@ -1,0 +1,31 @@
+dist: xenial
+language: python
+python:
+  - "3.7"
+
+services:
+  - docker
+
+addons:
+  sonarcloud:
+    organization: zenoscave
+    token: "$SONAR_TOKEN"
+
+before_install:
+  - pip install -U pip
+  - docker pull bash:latest
+
+install:
+  - pip install -e '.[test]' -r requirements.txt coverage codecov
+
+script:
+  - pylint tunnel_rpc tests/*.py
+  - flake8
+  - make -C docs linkcheck
+  - coverage erase
+  - coverage run --branch --source=tunnel_rpc -m pytest
+  - coverage xml -i
+  - sonar-scanner
+
+after_success:
+  - codecov
