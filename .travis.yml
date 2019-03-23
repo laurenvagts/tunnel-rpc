@@ -19,13 +19,13 @@ install:
   - pip install -e '.[test]' -r requirements.txt coverage codecov
 
 script:
-  - pylint tunnel_rpc tests/*.py
+  - pylint tunnel_rpc tests/*.py main.py
   - flake8
   - make -C docs linkcheck
   - coverage erase
   - coverage run --branch --source=tunnel_rpc -m pytest
   - coverage xml -i
-  - sonar-scanner
 
 after_success:
+  - sonar-scanner
   - codecov

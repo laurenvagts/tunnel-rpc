@@ -17,7 +17,7 @@ def create_app():
     Accepts and executes command requests from JSON data.
 
     Returns:
-        (Response) Application for execution.
+        (Flask) Application for execution.
 
     """
     app = Flask(__name__)
@@ -26,6 +26,12 @@ def create_app():
 
     @app.route("/", methods=["POST"])
     def index():  # pragma pylint: disable=unused-variable
+        """Index to run RPC POST requests.
+
+        Returns:
+            (Response) HTTP response to RPC call.
+
+        """
         req = request.get_data().decode()
         response = dispatch(req, debug=True)
         print(req, response, file=sys.stderr)
