@@ -3,7 +3,7 @@
 
     Includes any helper methods needed to run @method annotated rpc calls.
 
-    THe current calls are:
+    The current calls are:
 
         * run:  run arbitrary commands on a docker bash instance
                 with persistent state between commands.
