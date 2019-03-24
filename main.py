@@ -4,4 +4,4 @@
 """
 from tunnel_rpc.server import create_app
 
-app = create_app()
+APP = create_app()
