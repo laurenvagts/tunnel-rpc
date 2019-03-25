@@ -5,11 +5,14 @@
 from tunnel_rpc.methods import eval_commands, parse_output, run
 
 
-def test_eval_commands(docker_api_client, tunnel_container_factory):
+def test_eval_commands(
+        docker_api_client, tunnel_container_factory, tarball64_factory
+):
     """Tests the command evaluation method.
 
     eval_commands should return a string
     eval_commands logs should contain both stderr and stdout
+    eval_commands should extract tarballs correctly for the container
 
     """
     ls_container = tunnel_container_factory()
@@ -27,6 +30,18 @@ def test_eval_commands(docker_api_client, tunnel_container_factory):
         docker_api_client, stderr_container, ["echo 43 1>&2"]
     )
     assert "43" in stderr_logs, "eval_commands should contain stderr"
+
+    tarball_base64 = tarball64_factory({"test_file.txt": "43"})
+    cat_container = tunnel_container_factory()
+    cat_logs = eval_commands(
+        docker_api_client,
+        cat_container,
+        ["cat test_file.txt"],
+        source_base64=tarball_base64,
+    )
+    assert (
+        "43" in cat_logs
+    ), "eval_commands should extract tarballs correctly for the container"
 
 
 def test_parse_output():
@@ -66,10 +81,10 @@ def test_run():
 
     """
     try:
-        run({'commands': ['ls']})
-        run({'commands': ['ls'], 'foo': 'bar'})
-        run({'foo': 'bar'})
-        run({'commands': ['false']})
-        run({'commands': []})
+        run({"commands": ["ls"]})
+        run({"commands": ["ls"], "foo": "bar"})
+        run({"foo": "bar"})
+        run({"commands": ["false"]})
+        run({"commands": []})
     except Exception as err:  # pylint: disable=broad-except
         assert False, str(err)
