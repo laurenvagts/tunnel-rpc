@@ -12,8 +12,7 @@ addons:
     token: "$SONAR_TOKEN"
 
 before_install:
-  - pip install -U pip
-  - docker pull bash:latest
+  - bash ./prestart.sh
 
 install:
   - pip install -e '.[test]' -r requirements.txt coverage codecov

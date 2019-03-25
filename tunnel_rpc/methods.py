@@ -10,6 +10,7 @@
 
 """
 import os
+from base64 import b64decode
 from docker import APIClient
 
 __all__ = ["run"]
@@ -25,37 +26,35 @@ def create_container(api_client):
         (str) the container's id.
 
     """
-    container = api_client.create_container(
-        image="bash:latest",
-        stdin_open=True,
-        tty=True,
-        command=[
-            "bash",
-            "-c",
-            "while read CMD ; "
-            "do echo '$ '$CMD ; "
-            "eval $CMD ; echo $? ; done",
-        ],
+    return api_client.create_container(
+        image="zenoscave/tunnel-runner:latest", stdin_open=True, tty=True
     )
-    api_client.start(container)
-    return container
 
 
-def eval_commands(client, cont, commands):
+def eval_commands(api_client, container, commands, source_base64=None):
     """Evaluates commands in a docker container.
 
     Keeps stdin open and runs commands on same environment.
 
     Args:
-        client (APIClient): API interaction client for a Docker host
-        cont (str): Container's ID used to run the commands
+        api_client (APIClient): API interaction client for a Docker host
+        container (str): Container's ID used to run the commands
         commands (List[str]): Commands to run
+        source_base64 (str): The base64 contents of a tar archive (optional)
 
     Returns:
         (str) The stdout/stderr combined output
 
     """
-    socket = client.attach_socket(cont, params={"stdin": 1, "stream": 1})
+    if source_base64:
+        tar_stream = b64decode(source_base64)
+        api_client.put_archive(container, path="/app/src", data=tar_stream)
+
+    api_client.start(container)
+
+    socket = api_client.attach_socket(
+        container, params={"stdin": 1, "stream": 1}
+    )
     file_descriptor = socket.fileno()
 
     for cmd in commands:
@@ -63,10 +62,10 @@ def eval_commands(client, cont, commands):
         os.write(file_descriptor, cmd.encode("utf-8"))
     socket.close()
 
-    client.stop(cont)
-    client.wait(cont)
+    api_client.stop(container)
+    api_client.wait(container)
 
-    return client.logs(cont, stdout=True, stderr=True).decode()
+    return api_client.logs(container, stdout=True, stderr=True).decode()
 
 
 def parse_output(output):
@@ -92,9 +91,8 @@ def parse_output(output):
                 )
             buffer.clear()
         buffer.append(line)
-    if buffer:
-        commands.append((buffer[0], "\n".join(buffer[1:-1]), buffer[-1]))
-        buffer.clear()
+    commands.append((buffer[0], "\n".join(buffer[1:-1]), buffer[-1]))
+    buffer.clear()
     return commands
 
 
@@ -110,7 +108,10 @@ def run(request=None):
     """
     api_client = APIClient()
     container = create_container(api_client)
-    lines = eval_commands(api_client, container, request.get("commands", []))
+
+    source_base64 = request.get("source", None)
+    commands = request.get("commands", [])
+    lines = eval_commands(api_client, container, commands, source_base64)
     results = parse_output(lines)
     api_client.remove_container(container)
     return results

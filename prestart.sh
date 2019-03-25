@@ -1,4 +1,4 @@
-#!bash
+#!/bin/bash
 pip install -U pip
-docker pull bash:latest
+docker pull zenoscave/tunnel-runner:latest
 pip install -r requirements.txt
