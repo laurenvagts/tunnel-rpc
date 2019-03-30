@@ -10,7 +10,9 @@
 
 """
 import os
+import re
 from base64 import b64decode
+from collections import defaultdict
 from docker import APIClient
 
 __all__ = ["run"]
@@ -58,6 +60,7 @@ def eval_commands(api_client, container, commands, source_base64=None):
     file_descriptor = socket.fileno()
 
     for cmd in commands:
+        cmd = cmd.replace('\n', ' ; ')
         cmd += "\n"
         os.write(file_descriptor, cmd.encode("utf-8"))
     socket.close()
@@ -78,21 +81,16 @@ def parse_output(output):
         (list) The contents of the terminal
 
     """
-    preamble = True
     commands = []
-    buffer = []
-    for line in output.rstrip("\r\n").split("\r\n"):
-        if line.startswith("$ "):
-            if preamble:
-                preamble = False
-            else:
-                commands.append(
-                    (buffer[0], "\n".join(buffer[1:-1]), buffer[-1])
-                )
-            buffer.clear()
-        buffer.append(line)
-    commands.append((buffer[0], "\n".join(buffer[1:-1]), buffer[-1]))
-    buffer.clear()
+    for command_text in output.replace("\r\n", "\n").split("---\n"):
+        command = defaultdict(list)
+        for line in command_text.split("\n"):
+            match = re.match(r"^\[([^\]]*)\] (.*)$", line)
+            if bool(match):
+                key, value = match.groups()
+                command[key].append(value)
+        if any(command):
+            commands.append(dict(command))
     return commands
 
 

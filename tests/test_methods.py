@@ -32,42 +32,42 @@ def test_eval_commands(
     assert "43" in stderr_logs, "eval_commands should contain stderr"
 
     tarball_base64 = tarball64_factory({"test_file.txt": "43"})
-    cat_container = tunnel_container_factory()
-    cat_logs = eval_commands(
+    tarball_container = tunnel_container_factory()
+    tarball_logs = eval_commands(
         docker_api_client,
-        cat_container,
-        ["cat test_file.txt"],
+        tarball_container,
+        ["ls test_file.txt"],
         source_base64=tarball_base64,
     )
     assert (
-        "43" in cat_logs
+        "test_file.txt" in tarball_logs
     ), "eval_commands should extract tarballs correctly for the container"
 
 
 def test_parse_output():
     """Test the parse output method.
 
-    parse_output should return a list of tuples
+    parse_output should return a list of dicts
     parse_output should ignore preambles
     parse_output should append every command log
 
     """
 
-    response = parse_output("$ \r\n0\r\n")
+    response = parse_output("---\n[TEST] test\n")
     assert isinstance(response, list), "parse_output should return a list"
     assert isinstance(
-        response[0], tuple
-    ), "parse_output should return a list of tuples"
+        response[0], dict
+    ), "parse_output should return a list of dicts"
 
-    response = parse_output("should not show up \r\n$ \r\n0\r\n")
+    response = parse_output("should not show up---\n[COMMAND] ls\n")
     assert all(
-        not isinstance(item, str) or "should not show up" not in item
-        for t_item in response
-        for item in t_item
+        "should not show up" not in output
+        for command in response
+        for _, output in command.items()
     ), "parse_output should ignore preambles"
 
     for length in range(2, 10):
-        output = "$ \r\n0\r\n" * length
+        output = "---\n[TEST] test\n" * length
         response = parse_output(output)
         assert (
             len(response) == length
