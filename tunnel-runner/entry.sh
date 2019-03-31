@@ -10,7 +10,7 @@ _log() {
     echo "[${level}] $1"
 }
 
-_tunnel_wrap() { trap times RETURN; eval "$*" 1>"${LOGS}/stdout" 2>"${LOGS}/stderr"; }
+_tunnel_wrap() { eval "$*" 1>"${LOGS}/stdout" 2>"${LOGS}/stderr"; }
 
 
 _tunnel_do() {
@@ -21,7 +21,7 @@ _tunnel_do() {
     while read -r CMD ; do
         echo "---${TUNNEL_COMMAND_DELIM}"
         _log COMMAND "${CMD}"
-        _tunnel_wrap "${CMD}" | tr $'\n' ' ' | cut -d ' ' -f 1 | _log_stdin CLOCK
+        _tunnel_wrap "${CMD}" 
         CODE="${PIPESTATUS[0]}"
         sed -i -e '$a\' "${LOGS}/stdout"
         sed -i -e '$a\' "${LOGS}/stderr"
