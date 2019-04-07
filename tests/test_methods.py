@@ -2,14 +2,17 @@
 """Tests for Tunnel RPC methods.
 
 """
-from tunnel_rpc.methods import eval_commands, parse_output
+from tunnel_rpc.methods import eval_commands, parse_output, run
 
 
-def test_eval_commands(docker_api_client, tunnel_container_factory):
+def test_eval_commands(
+        docker_api_client, tunnel_container_factory, tarball64_factory
+):
     """Tests the command evaluation method.
 
     eval_commands should return a string
     eval_commands logs should contain both stderr and stdout
+    eval_commands should extract tarballs correctly for the container
 
     """
     ls_container = tunnel_container_factory()
@@ -28,32 +31,60 @@ def test_eval_commands(docker_api_client, tunnel_container_factory):
     )
     assert "43" in stderr_logs, "eval_commands should contain stderr"
 
+    tarball_base64 = tarball64_factory({"test_file.txt": "43"})
+    tarball_container = tunnel_container_factory()
+    tarball_logs = eval_commands(
+        docker_api_client,
+        tarball_container,
+        ["ls test_file.txt"],
+        source_base64=tarball_base64,
+    )
+    assert (
+        "test_file.txt" in tarball_logs
+    ), "eval_commands should extract tarballs correctly for the container"
+
 
 def test_parse_output():
     """Test the parse output method.
 
-    parse_output should return a list of tuples
+    parse_output should return a list of dicts
     parse_output should ignore preambles
     parse_output should append every command log
 
     """
 
-    response = parse_output("$ \r\n0\r\n")
+    response = parse_output("---\n[TEST] test\n")
     assert isinstance(response, list), "parse_output should return a list"
     assert isinstance(
-        response[0], tuple
-    ), "parse_output should return a list of tuples"
+        response[0], dict
+    ), "parse_output should return a list of dicts"
 
-    response = parse_output("should not show up \r\n$ \r\n0\r\n")
+    response = parse_output("should not show up---\n[COMMAND] ls\n")
     assert all(
-        not isinstance(item, str) or "should not show up" not in item
-        for t_item in response
-        for item in t_item
+        "should not show up" not in output
+        for command in response
+        for _, output in command.items()
     ), "parse_output should ignore preambles"
 
     for length in range(2, 10):
-        output = "$ \r\n0\r\n" * length
+        output = "---\n[TEST] test\n" * length
         response = parse_output(output)
         assert (
             len(response) == length
         ), "parse_output should append every command log"
+
+
+def test_run():
+    """Test the run method.
+
+    run should not raise errors
+
+    """
+    try:
+        run({"commands": ["ls"]})
+        run({"commands": ["ls"], "foo": "bar"})
+        run({"foo": "bar"})
+        run({"commands": ["false"]})
+        run({"commands": []})
+    except Exception as err:  # pylint: disable=broad-except
+        assert False, str(err)
