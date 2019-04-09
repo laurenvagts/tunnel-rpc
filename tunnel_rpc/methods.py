@@ -11,6 +11,7 @@
 """
 import os
 import re
+import tarfile
 from base64 import b64decode
 from collections import defaultdict
 from docker import APIClient
@@ -49,8 +50,9 @@ def eval_commands(api_client, container, commands, source_base64=None):
 
     """
     if source_base64:
-        tar_stream = b64decode(source_base64)
-        api_client.put_archive(container, path="/app/src", data=tar_stream)
+        if(tarfile.is_tarfile(source_base64)):
+            tar_stream = b64decode(source_base64)
+            api_client.put_archive(container, path="/app/src", data=tar_stream)
 
     api_client.start(container)
 
