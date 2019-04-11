@@ -11,10 +11,10 @@
 """
 import os
 import re
-import tarfile
 from base64 import b64decode
 from collections import defaultdict
 from docker import APIClient
+from flask import flash
 
 __all__ = ["run"]
 
@@ -53,7 +53,7 @@ def eval_commands(api_client, container, commands, source_base64=None):
         try:
             tar_stream = b64decode(source_base64)
         except:
-            print("Non base-64 characters found, source not executed.")
+            flash("Non base-64 characters found, source not executed.")
         api_client.put_archive(container, path="/app/src", data=tar_stream)
 
     api_client.start(container)
