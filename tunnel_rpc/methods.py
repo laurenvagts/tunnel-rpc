@@ -51,7 +51,7 @@ def eval_commands(api_client, container, commands, source_base64=None):
     """
     if source_base64:
         tar_stream = b64decode(source_base64)
-        if (tarfile.is_tarfile(tar_stream)):
+        if tarfile.is_tarfile(tar_stream):
             api_client.put_archive(container, path="/app/src", data=tar_stream)
 
     api_client.start(container)
