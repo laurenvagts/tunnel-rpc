@@ -6,6 +6,11 @@ python:
 services:
   - docker
 
+addons:
+  sonarcloud:
+    organization: "laurenvagts-github" 
+    token: "Sonar_Token"
+      
 before_install:
   - pip install -U pip
   - docker pull bash:latest
@@ -20,6 +25,7 @@ script:
   - coverage erase
   - coverage run --branch --source=tunnel_rpc -m pytest
   - coverage xml -i
-
+  - sonar-scanner
+  
 after_success:
   - codecov
