@@ -6,11 +6,6 @@ python:
 services:
   - docker
 
-addons:
-  sonarcloud:
-    organization: zenoscave
-    token: "$SONAR_TOKEN"
-
 before_install:
   - pip install -U pip
   - docker pull bash:latest
@@ -25,8 +20,6 @@ script:
   - coverage erase
   - coverage run --branch --source=tunnel_rpc -m pytest
   - coverage xml -i
-  - sonar-scanner
 
 after_success:
   - codecov
-  
